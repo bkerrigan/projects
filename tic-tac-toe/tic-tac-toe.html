@@ -1,0 +1,325 @@
+<!DOCTYPE HTML>
+<html>
+<head><title>Tic Tac Toe</title>
+
+<form>
+<select id="players">
+    <option value=1>One Player</option>
+    <option value=2>Two Players</option>
+</select>
+<input type="button" value="Restart" onclick="startGame()" />
+</form>
+<p></p>
+</head>
+<body onload="javascript: startGame();">
+<canvas id="board" width="400" height="400">Canvas not supported by this browser!</canvas>
+
+<script>
+var board;
+var gameBoard;
+var context;
+var width, height;
+var numPlayers;
+var turn;
+
+function drawX(row, col) {
+	var x = (row * width/3) + width/6;
+	var y = (col * height/3) + height/6;
+
+	var deltaX = width/3 * 0.3;
+	var deltaY = height/3 * 0.3;
+
+	context.beginPath();
+	context.lineWidth = 3;
+	context.strokeStyle = "#0000ff";
+
+	context.moveTo(x-deltaX, y-deltaY);
+	context.lineTo(x+deltaX, y+deltaY);
+
+	context.moveTo(x+deltaX, y-deltaY);
+	context.lineTo(x-deltaX, y+deltaY);
+
+	context.stroke();
+	context.closePath();
+
+	gameBoard[row][col] = 1;
+	turn = -1;	//Set the turn to be O's
+};
+
+function drawO(row, col) {
+	var x = (row * width/3) + width/6;
+	var y = (col * height/3) + height/6;
+
+    var radius = height/3 * 0.35;
+
+	context.beginPath();
+    context.lineWidth = 3;
+
+    context.arc(x, y, radius, 0, 2*Math.PI, false);
+	context.strokeStyle = "black";
+    context.stroke();
+	context.closePath();
+
+	gameBoard[row][col] = -1;
+	turn = 1;  //Set the turn to be X's
+};
+
+function getRandom(n) {
+	return Math.floor(Math.random()*(n+1));
+}
+
+function resetGame() {
+	context.clearRect(0,0,width,height);
+
+	var players = document.getElementById("players");
+	numPlayers = players.value;
+
+	for (var i=0; i < 3; i++) {
+		gameBoard[i] = new Array(3);
+		for (var j=0; j < 3; j++) {
+			gameBoard[i][j] = 0;
+		}
+    }
+
+	drawBoard();
+}
+
+function checkEndGame() {
+	var gameOver = true;
+
+	for (var i=0; i<3; i++) {
+		var rowSum = 0;
+		var colSum = 0;
+		for (var j=0; j<3; j++) {
+			rowSum += gameBoard[i][j];
+			colSum += gameBoard[j][i];
+
+			if (gameBoard[i][j] == 0) {
+				gameOver = false;
+			}
+		}
+		if ((rowSum == 3) || (colSum == 3)) {
+			alert("Player X won!");
+			return true;
+		} else if ((rowSum == -3) || (colSum == -3)) {
+			alert("Player O won!");
+			return true;
+		}
+	}
+
+	var diag1 = gameBoard[0][0] + gameBoard[1][1] + gameBoard[2][2];
+	var diag2 = gameBoard[0][2] + gameBoard[1][1] + gameBoard[2][0];
+	if (diag1 == 3 || diag2 == 3) {
+		alert("Player X won!");
+		return true;
+	} else if (diag1 == -3 || diag2 == -3) {
+		alert("Player O won!");
+		return true;
+	}
+
+	if (gameOver == true) {
+		alert("Cat's Game");
+		return true;
+	}
+
+	return false;
+};
+
+function move() {
+	//gameBoard[col][row]
+	var rSum = new Array(3);
+	rSum[0] = rSum[1] = rSum[2] =0;
+	var cSum = new Array(3);
+	cSum[0] = cSum[1] = cSum[2] =0;
+	var dSum = new Array(2);
+	dSum[0] = dSum[1] =0;
+
+	for (var i=0; i<3; i++) {
+		for (var j=0; j<3; j++) {
+			rSum[j] += gameBoard[i][j];
+			cSum[i] += gameBoard[i][j];
+			if (i == j) {
+				dSum[0] += gameBoard[i][j];
+			}
+			if ((i==0 && j==2) || (i==2 && j==0) || (i==1 && j==1)) {
+				dSum[1] += gameBoard[i][j];
+			}
+		}
+	}
+	
+	//Check for winning moves
+	for (var k=0; k<3; k++) {
+		if (rSum[k] == -2) {
+			for (var m=0; m<3; m++) {
+				if (gameBoard[m][k] == 0) {
+					drawO(m,k);
+					return;
+				}
+			}
+		}
+
+		if (cSum[k] == -2) {
+			for (var m=0; m<3; m++) {
+				if (gameBoard[k][m] == 0) {
+					drawO(k,m);
+					return;
+				}
+			}
+		}
+	}
+
+	if (dSum[0] == -2) {
+		for (var d=0; d<3; d++) {
+			if (gameBoard[d][d] == 0) {
+				drawO(d,d);
+				return;
+			}
+		}
+	} else if (dSum[1] == -2) {
+		if (gameBoard[0][2] ==0) {
+			drawO(0,2);
+			return;
+		} else if (gameBoard[1][1] == 0) {
+			drawO(1,1);
+			return;
+		} else if (gameBoard[2][0] == 0) {
+			drawO(2,0);
+			return;
+		}
+	}
+	
+	//Check for moves to block player X from winning
+	for (var k=0; k<3; k++) {
+        if (rSum[k] == 2) {
+            for (var m=0; m<3; m++) {
+                if (gameBoard[m][k] == 0) {
+                    drawO(m,k);
+                    return;
+                }
+            }
+        }
+
+        if (cSum[k] == 2) {
+            for (var m=0; m<3; m++) {
+                if (gameBoard[k][m] == 0) {
+                    drawO(k,m);
+                    return;
+                }
+            }
+        }
+    }
+
+    if (dSum[0] == 2) {
+        for (var d=0; d<3; d++) {
+            if (gameBoard[d][d] == 0) {
+                drawO(d,d);
+                return;
+            }
+        }
+    } else if (dSum[1] == 2) {
+        if (gameBoard[0][2] ==0) {
+            drawO(0,2);
+            return;
+        } else if (gameBoard[1][1] == 0) {
+            drawO(1,1);
+            return;
+        } else if (gameBoard[2][0] == 0) {
+            drawO(2,0);
+            return;
+        }
+    }
+
+	//Otherwise just play in a random square
+	var x = getRandom(2);
+	var y = getRandom(2);
+
+	while(gameBoard[x][y] != 0) {
+		x = getRandom(2);
+		y = getRandom(2);
+	}
+
+	drawO(x,y);
+};
+
+function click(e) {
+	var x = e.clientX - board.offsetLeft;
+	var y = e.clientY - board.offsetTop;
+
+	var row = Math.floor(x/(width/3));
+	var col = Math.floor(y/(width/3));
+
+	if (gameBoard[row][col] == 0) {
+		if (numPlayers == 1) {
+			drawX(row, col);
+		} else {
+			if (turn == 1) {
+				//X's turn
+				drawX(row, col);
+			} else if (turn == -1) {
+				//O's turn
+				drawO(row, col);
+			}
+		}
+	} else {
+		return;
+	}
+
+	//check if that move won the game
+	if (checkEndGame()) {
+		resetGame();
+		return;
+	}
+
+	if (numPlayers == 1) {
+		//move for player O
+		move(); 
+
+		if (checkEndGame()){
+			resetGame();
+		}
+	}
+};
+
+function drawBoard() {
+    context.beginPath();
+    context.lineWidth = 3;
+	context.strokeStyle = "#000000";
+
+    context.moveTo(width/3, 0);
+    context.lineTo(width/3, height);
+
+    context.moveTo(2*width/3, 0);
+    context.lineTo(2*width/3, height);
+
+    context.moveTo(0, height/3);
+    context.lineTo(width, height/3);
+
+    context.moveTo(0, 2*height/3);
+    context.lineTo(width, 2*height/3);
+
+    context.stroke();
+    context.closePath();
+};
+
+function startGame() {
+    board = document.getElementById("board");
+	var players = document.getElementById("players");
+    context = board.getContext("2d");
+
+    width = board.width;
+    height = board.height;
+	numPlayers = players.value;
+
+	//X goes first
+	turn = 1;
+
+	board.addEventListener("click", click, false);
+
+	gameBoard = new Array(3);
+	resetGame();
+};
+ 
+</script>
+
+</body>
+</html>
