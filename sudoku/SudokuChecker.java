@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.lang.Math;
 import java.util.*;
 
+/* This class will take an input file of a solution to a sudoku board
+ * and will check that the solution is valid
+ */
 class SudokuChecker {
 	int size = 0;	// height and width of the game board
 	int[][] board;
@@ -86,20 +89,16 @@ class SudokuChecker {
 	 */
 	boolean validate() {
 		// from the array, for each row, column, and region
-		// validate that the numbers 1,2,...,size are present
+		// validate that the numbers 1,2,...,size are present by
+		// making sure the number is within the allowed range
 		// add to a set (ensure unique) and compare set size to size
-		// sum the values of the numbers, should be n*n+1/2
-		int sum = (size * (size + 1))/2;	// the sum of numbers 1 + 2 + ... + size
 		int min = 1;
 		int grid_size = (int) Math.sqrt((double) size);
 		
 		// check rows and columns
 		for (int i=0; i < size; i++) {
 			Set<Integer> row_numbers = new HashSet<Integer>();
-			int row_sum = 0;
-
 			Set<Integer> col_numbers = new HashSet<Integer>();
-			int col_sum = 0;
 
 			for (int j=0; j < size; j++) {
 				if (board[i][j] > size || board[i][j] < min) {
@@ -111,18 +110,16 @@ class SudokuChecker {
 					return false;
 				}
 				row_numbers.add(board[i][j]);
-				row_sum += board[i][j];
 
 				col_numbers.add(board[j][i]);
-				col_sum += board[j][i];
 			}
 
-			if (row_sum != sum || row_numbers.size() != size) {
+			if (row_numbers.size() != size) {
 				err_loc = "Incorrect value in row: " + i;
 				return false;
 			}
 
-			if (col_sum != sum || col_numbers.size() != size) {
+			if (col_numbers.size() != size) {
 				err_loc = "Incorrect value in column: " + i;
 				return false;
 			}
@@ -132,7 +129,6 @@ class SudokuChecker {
 		for (int i=0; i < size; i+=grid_size) {
 			for (int j=0; j < size; j+=grid_size) {
 				Set<Integer> grid_numbers = new HashSet<Integer>();
-				int grid_sum = 0;
 				for (int m=0; m < grid_size; m++) {
 					for (int n=0; n < grid_size; n++) {
 						if (board[i+m][j+n] < min || board[i+m][j+n] > size) {
@@ -140,10 +136,9 @@ class SudokuChecker {
 							return false;
 						}
 						grid_numbers.add(board[i+m][j+n]);
-						grid_sum += board[i+m][j+n];
 					}
 				}
-				if (grid_sum != sum || grid_numbers.size() != size) {
+				if (grid_numbers.size() != size) {
 					err_loc = "Incorrect value in grid: (" + i + "," + j + ") to (" + (i + grid_size - 1) + "," + (j + grid_size -1) + ")";
 					return false;
 				}
