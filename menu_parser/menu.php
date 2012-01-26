@@ -94,14 +94,30 @@ class RestaurantFinder {
 	function find_best_restaurant() {
 		$best_restaurant = null;
 		$best_price = null;
-		foreach ($this->restaurants as $restaurant_menu) {
+		foreach ($this->restaurants as $restaurant => $menu) {
 			$found_all_items = true;
+			$cost = 0;
 			foreach ($this->items_to_buy as $item) {
-				$matches = $this->find_item_in_menu($item, $restaurant_menu);
+				$matches = $this->find_item_in_menu($item, $menu);
 				if (count($matches) == 0) {
 					$found_all_items = false;
+				} else if (count($matches) == 1) {
+					$cost += array_pop($matches);	
+				} else {
+					// TODO handle multiple items
 				}
 			}
+			if ($found_all_items) {
+				if ($best_price === null || $cost < $best_price) {
+					$best_price = $cost;
+					$best_restaurant = $restaurant;
+				}
+			}
+		}
+		if ($best_restaurant === null) {
+			echo "nil\n";
+		} else {
+			echo $best_restaurant . ", " . $best_price . "\n";
 		}
 	}
 
