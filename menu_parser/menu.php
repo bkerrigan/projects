@@ -7,7 +7,7 @@ class RestaurantFinder {
 	function __construct( $args ) {
 		$arg_size = count($args);
 		if ($arg_size < 3) {
-			exit("Error: Invalid number of arguments");
+			exit("Error: Invalid number of arguments\n");
 		}
 
 		for ($i = 1; $i < $arg_size; $i++) {
@@ -101,10 +101,37 @@ class RestaurantFinder {
 				$matches = $this->find_item_in_menu($item, $menu);
 				if (count($matches) == 0) {
 					$found_all_items = false;
-				} else if (count($matches) == 1) {
-					$cost += array_pop($matches);	
 				} else {
-					// TODO handle multiple items
+					// find the cheapest option for that item
+					$cheapest_item = null;
+					foreach ($matches as $name => $price) {
+						$combo = explode(",", $name);
+						if (count($combo) > 1) {
+							// combo deal, check for other items
+							$combo_value = 0;
+							foreach ($combo as $citem) {
+								if (array_key_exists($citem, $this->items_to_buy)) {
+									// look up the item price, add to $combo_value
+									//TODO - use find_items_in_menu again?
+								}
+							}
+							if ($combo_value > $price) {
+								// use the combo item
+								$cost += $price;
+							} else {
+								// use the individual items
+								$cost += $combo_value;
+							}
+							// we already added the items so remove them from the items_to_buy list
+							//TODO
+						} else {
+							// not a combo item
+							if ($cheapest_item === null || $price < $cheapest_item) {
+								$cheapest_item = $price;
+							}
+						}
+					}
+					$cost += $cheapest_item;
 				}
 			}
 			if ($found_all_items) {
