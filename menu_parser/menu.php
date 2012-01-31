@@ -161,7 +161,6 @@ class RestaurantFinder {
 			$found_all_items = true;
 			$cost = $this->find_best_price_at_restaurant($this->items_to_buy, $menu);
 			if ($cost !== null) {
-				echo "Found all items at restaurant " . $restaurant . " cost is " . $cost . "\n";
 				if ($best_price === null || $cost < $best_price) {
 					$best_price = $cost;
 					$best_restaurant = $restaurant;
@@ -224,7 +223,6 @@ class RestaurantFinder {
 						// not a combo item
 						if ($cheapest_item === null || $price < $cheapest_item) {
 							$cheapest_item = $price;
-							echo "Adding cheapest item: " . $price . " to the cost\n";
 						}
 					}
 				}
