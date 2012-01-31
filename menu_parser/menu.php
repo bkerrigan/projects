@@ -159,59 +159,8 @@ class RestaurantFinder {
 		$best_price = null;
 		foreach ($this->restaurants as $restaurant => $menu) {
 			$found_all_items = true;
-			$cost = 0;
-			$shopping_list = $this->items_to_buy;
-			foreach ($shopping_list as $item) {
-				$matches = $this->find_item_in_menu($item, $menu);
-				if (count($matches) == 0) {
-					$found_all_items = false;
-					break;
-				} else {
-					// find the cheapest option for that item
-					$cheapest_item = null;
-					foreach ($matches as $matching_item) {
-						$price = $matching_item->price;
-						if (count($matching_item->item) > 1) {
-							// combo deal, check for other items
-							$combo_value = 0;
-							foreach ($matching_item->item as $citem) {
-								if (in_array($citem, $shopping_list)) {
-									// look up the item price, add to $combo_value
-									$cprice = $this->find_cheapest_match_in_menu($citem, $menu);
-									if ($cprice === null) continue;
-									$combo_value += $cprice;
-								}
-							}
-							if ($combo_value > $price) {
-								// use the combo item
-								$cost += $price;
-							} else {
-								// use the individual items
-								$cost += $combo_value;
-							}
-							// we already added the items so remove them from the items_to_buy list
-							foreach ($matching_item->item as $combo_item) {
-								$key = array_search($combo_item, $shopping_list);
-								if ($key === false) {
-									continue;
-								}
-								unset($shopping_list[$key]);
-							}
-							// if we've found a combo item that matches then 
-							// we've checked all possible matches, break out of the loop
-							break;
-						} else {
-							// not a combo item
-							if ($cheapest_item === null || $price < $cheapest_item) {
-								$cheapest_item = $price;
-								echo "Adding cheapest item: " . $price . " to the cost\n";
-							}
-						}
-					}
-					$cost += $cheapest_item;
-				}
-			}
-			if ($found_all_items) {
+			$cost = $this->find_best_price_at_restaurant($this->items_to_buy, $menu);
+			if ($cost !== null) {
 				echo "Found all items at restaurant " . $restaurant . " cost is " . $cost . "\n";
 				if ($best_price === null || $cost < $best_price) {
 					$best_price = $cost;
@@ -224,6 +173,65 @@ class RestaurantFinder {
 		} else {
 			echo $best_restaurant . ", " . $best_price . "\n";
 		}
+	}
+
+	/* Given a list of items to buy and a menu for a restaurant,
+	 * find the best price at the restaurant for those items
+	 * Returns: float value - the best price for the items
+	 *          null - not all items could be found on the menu
+	 */
+	function find_best_price_at_restaurant($shopping_list, $menu) {
+		$cost = 0;
+		foreach ($shopping_list as $item) {
+			$matches = $this->find_item_in_menu($item, $menu);
+			if (count($matches) == 0) {
+				$found_all_items = false;
+				return null;
+			} else {
+				// find the cheapest option for that item
+				$cheapest_item = null;
+				foreach ($matches as $matching_item) {
+					$price = $matching_item->price;
+					if (count($matching_item->item) > 1) {
+						// combo deal, check for other items
+						$combo_value = 0;
+						foreach ($matching_item->item as $citem) {
+							if (in_array($citem, $shopping_list)) {
+								// look up the item price, add to $combo_value
+								$cprice = $this->find_cheapest_match_in_menu($citem, $menu);
+								if ($cprice === null) continue;
+								$combo_value += $cprice;
+							}
+						}
+						if ($combo_value > $price) {
+							// use the combo item
+							$cost += $price;
+						} else {
+							// use the individual items
+							$cost += $combo_value;
+						}
+						// we already added the items so remove them from the items_to_buy list
+						foreach ($matching_item->item as $combo_item) {
+							$key = array_search($combo_item, $shopping_list);
+							if ($key === false) {
+								continue;
+							}
+							unset($shopping_list[$key]);
+						}
+						// we've checked all possible matches, break out of the loop
+						break;
+					} else {
+						// not a combo item
+						if ($cheapest_item === null || $price < $cheapest_item) {
+							$cheapest_item = $price;
+							echo "Adding cheapest item: " . $price . " to the cost\n";
+						}
+					}
+				}
+				$cost += $cheapest_item;
+			}
+		}
+		return $cost;
 	}
 
 }
