@@ -1,5 +1,18 @@
 <?php
 
+class MenuItem {
+	public $item = array();
+	public $price;
+
+	function __construct($items, $price) {
+		$this->item = $items;
+		if (count($items) > 1) {
+			$isCombo = true;
+		}
+		$this->price = $price;
+	}
+}
+
 class RestaurantFinder {
 	public $restaurants = array();
 	public $items_to_buy = array();
@@ -19,8 +32,28 @@ class RestaurantFinder {
 		}
 
 		$this->parse_menu_file($menu_file);
+		$this->sort_menus();
 		$this->find_best_restaurant();
 	}
+
+	/* Sort the manu at each restaurant so the combo items
+	 * are the first items in the menu
+	 */
+	 function sort_menus() {
+		$compare = function($a, $b) {
+			// sort in descending order by number of items
+			$acount = count($a->item);
+			$bcount = count($b->item);
+			if ($acount == $bcount) {
+				return 0;
+			}
+			return ($acount > $bcount) ? -1 : 1;
+		};
+		foreach ($this->restaurants as $key => $restaurant) {
+			usort($restaurant, $compare);
+			$this->restaurants[$key] = $restaurant;
+		}
+	 }
 
 	/* parses a CSV string and returns the CSV as an array
 	 * Lines are separated by a carriage-return
@@ -54,7 +87,11 @@ class RestaurantFinder {
 					array_push($items, $value);
 				}
 			}
-			$this->restaurants[$restaurant_id][implode(",", $items)] = $price; 
+			$mitem = new MenuItem($items, $price);
+			if (!array_key_exists($restaurant_id, $this->restaurants)) {
+				$this->restaurants[$restaurant_id] = array();
+			}
+			array_push($this->restaurants[$restaurant_id], $mitem); 
 		}
 	}
 
@@ -79,12 +116,38 @@ class RestaurantFinder {
 	 * return - an array of all matching items
 	 */
 	function find_item_in_menu ($item, $menu_array) {
-		$matches = preg_grep("/".$item."/", array_keys($menu_array)); // search the array keys for the item names
-		$items = array();
-		foreach ($matches as $match) {
-			$items[$match] = $menu_array[$match];
+		$matches = array();
+		foreach ($menu_array as $mitem) {
+			foreach ($mitem->item as $citem) {
+				if ($item === $citem) {
+					array_push($matches, $mitem);
+					break;
+				}
+			}
 		}
-		return $items;
+		return $matches;
+	}
+
+	/* Find the given item in a restaurant menu array
+	 * input - string name of item,
+	 *         array to search
+	 * return - price of the cheapest matching item
+	 *          null if there is no matching item
+	 */
+	function find_cheapest_match_in_menu($item, $menu) {
+		$matches = $this->find_item_in_menu($item, $menu);
+		if (count($matches) == 0) {
+			return null;
+		}
+		// find the cheapest option for that item
+		$cheapest = null;
+		foreach ($matches as $match) {
+			if ($cheapest === null || $match->price < $cheapest) {
+				$cheapest = $match->price;
+			}
+		}
+
+		return $cheapest;
 	}
 	
 	/* Finds the restaurant with all the items_to_buy
@@ -97,22 +160,26 @@ class RestaurantFinder {
 		foreach ($this->restaurants as $restaurant => $menu) {
 			$found_all_items = true;
 			$cost = 0;
-			foreach ($this->items_to_buy as $item) {
+			$shopping_list = $this->items_to_buy;
+			foreach ($shopping_list as $item) {
 				$matches = $this->find_item_in_menu($item, $menu);
 				if (count($matches) == 0) {
 					$found_all_items = false;
+					break;
 				} else {
 					// find the cheapest option for that item
 					$cheapest_item = null;
-					foreach ($matches as $name => $price) {
-						$combo = explode(",", $name);
-						if (count($combo) > 1) {
+					foreach ($matches as $matching_item) {
+						$price = $matching_item->price;
+						if (count($matching_item->item) > 1) {
 							// combo deal, check for other items
 							$combo_value = 0;
-							foreach ($combo as $citem) {
-								if (array_key_exists($citem, $this->items_to_buy)) {
+							foreach ($matching_item->item as $citem) {
+								if (in_array($citem, $shopping_list)) {
 									// look up the item price, add to $combo_value
-									//TODO - use find_items_in_menu again?
+									$cprice = $this->find_cheapest_match_in_menu($citem, $menu);
+									if ($cprice === null) continue;
+									$combo_value += $cprice;
 								}
 							}
 							if ($combo_value > $price) {
@@ -123,11 +190,21 @@ class RestaurantFinder {
 								$cost += $combo_value;
 							}
 							// we already added the items so remove them from the items_to_buy list
-							//TODO
+							foreach ($matching_item->item as $combo_item) {
+								$key = array_search($combo_item, $shopping_list);
+								if ($key === false) {
+									continue;
+								}
+								unset($shopping_list[$key]);
+							}
+							// if we've found a combo item that matches then 
+							// we've checked all possible matches, break out of the loop
+							break;
 						} else {
 							// not a combo item
 							if ($cheapest_item === null || $price < $cheapest_item) {
 								$cheapest_item = $price;
+								echo "Adding cheapest item: " . $price . " to the cost\n";
 							}
 						}
 					}
@@ -135,6 +212,7 @@ class RestaurantFinder {
 				}
 			}
 			if ($found_all_items) {
+				echo "Found all items at restaurant " . $restaurant . " cost is " . $cost . "\n";
 				if ($best_price === null || $cost < $best_price) {
 					$best_price = $cost;
 					$best_restaurant = $restaurant;
