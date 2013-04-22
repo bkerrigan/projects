@@ -1,4 +1,4 @@
-var images = [["default.jpg"],["flowers.jpg", "grapes.jpg"], ["landscape.jpg", "leaves.jpg"]];
+var images = [["default.jpg"],["barrels.jpg", "flowers.jpg", "glass.jpg", "grapes.jpg"], ["landscape.jpg", "leaves.jpg", "trike.jpg", "vines.jpg"]];
 var current_set = 0;
 var current_image = 0;
 var timer;
