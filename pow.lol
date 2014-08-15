@@ -1,0 +1,29 @@
+HAI 1.2
+  BTW This is a function to calculate the value of a number raised to a given exponent.
+  HOW IZ I POW YR BAS AN YR XPONENT
+    BTW Base case where exponent is zero
+    BOTH SAEM XPONENT AN 0, O RLY?
+      YA RLY
+        FOUND YR 1
+    OIC
+    
+    BTW Only recurse once for optimization
+    I HAS A HALF_POW ITZ I IZ POW YR BAS AN YR QUOSHUNT OF XPONENT AN 2 MKAY
+    BOTH SAEM MOD OF XPONENT AN 2 AN 0, O RLY?
+      YA RLY
+        FOUND YR PRODUKT OF HALF_POW AN HALF_POW
+      NO WAI
+        FOUND YR PRODUKT OF BAS AN PRODUKT OF HALF_POW AN HALF_POW
+    OIC
+  IF U SAY SO
+
+  VISIBLE "2^3 IZ"
+  I HAS A RESULT ITZ I IZ POW YR 2 AN YR 3 MKAY
+  VISIBLE RESULT
+  VISIBLE "2^4 IZ"
+  I HAS A RESULT2 ITZ I IZ POW YR 2 AN YR 4 MKAY
+  VISIBLE RESULT2
+  VISIBLE "2^5 IZ"
+  I HAS A RESULT3 ITZ I IZ POW YR 2 AN YR 5 MKAY
+  VISIBLE RESULT3
+KTHXBYE
