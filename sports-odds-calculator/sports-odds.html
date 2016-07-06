@@ -1,0 +1,105 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Sports Odds Calculator</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  </head>
+  <body>
+    <div id='input' style='position:fixed; left:50%; margin-left:-132px;'>
+      <form action=''>
+        <table>
+          <tr>
+            <td>
+              <input id='away-team-name' class='form-input' type='text' placeholder='Away Team Name'>
+            </td>
+            <td>
+              <input id='home-team-name' class='form-input' type='text' placeholder='Home Team Name'>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input id='away-team-rating' class='form-input' type='text' placeholder='Away Team Rating'>
+            </td>
+            <td>
+              <input id='home-team-rating' class='form-input' type='text' placeholder='Home Team Rating'>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input id='away-team-predictor' class='form-input' type='text' placeholder='Away Team Predictor'>
+            </td>
+            <td>
+              <input id='home-team-predictor' class='form-input' type='text' placeholder='Home Team Predictor'>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input id='home-field-advantage' class='form-input' type='text' placeholder='Home Field Advantage'>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input id='calc-button' type='submit' value='Calculate!'>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+
+    <div id='results' style='position:fixed; left:50%; margin-left:-132px; margin-top: 200px;'></div>
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+         $('#calc-button').click(function () {
+           var home_name = $('#home-team-name').val();
+           var away_name = $('#away-team-name').val();
+           var home_rating = parseFloat($('#home-team-rating').val());
+           var away_rating = parseFloat($('#away-team-rating').val());
+           var home_predictor = parseFloat($('#home-team-predictor').val());
+           var away_predictor = parseFloat($('#away-team-predictor').val());
+           var home_field_advantage = parseFloat($('#home-field-advantage').val());
+
+           var $results = $('#results');
+
+           var rating_diff = home_rating - away_rating;
+           var rating_diff_plus_hfa = rating_diff + home_field_advantage;
+           var predictor_diff = home_predictor - away_predictor;
+           var predictor_diff_plus_hfa = predictor_diff + home_field_advantage;
+           var rating_plus_predictor = rating_diff_plus_hfa + predictor_diff_plus_hfa;
+           var calculated_line = rating_plus_predictor/2;
+
+           // Append the results.
+           $results.append('<table>');
+           $results.append('<tr><td><b>'+away_name+' at '+home_name+'</b></td></tr>');
+           $results.append('<br/>');
+           $results.append('<tr><td>Rating:</td></tr>');
+           $results.append('<tr><td>'+home_name+'</td><td>'+home_rating+'</td></tr>');
+           $results.append('<tr><td>'+away_name+'</td><td>- '+away_rating+'</td></tr>');
+           $results.append('<tr><td>Equals</td><td>'+rating_diff.toFixed(2)+'</td></tr>');
+           $results.append('<tr><td>Home Field Advantage</td><td>+ '+home_field_advantage+'</td></tr>');
+           $results.append('<tr><td>Result</td><td>'+rating_diff_plus_hfa.toFixed(2)+'</td></tr>');
+           $results.append('<br/>');
+           $results.append('<tr><td>Predictor:</td></tr>');
+           $results.append('<tr><td>'+home_name+'</td><td>'+home_predictor+'</td></tr>');
+           $results.append('<tr><td>'+away_name+'</td><td>- '+away_predictor+'</td></tr>');
+           $results.append('<tr><td>Equals</td><td>'+predictor_diff.toFixed(2)+'</td></tr>');
+           $results.append('<tr><td>Home Field Advantage</td><td>+ '+home_field_advantage+'</td></tr>');
+           $results.append('<tr><td>Result</td><td>'+predictor_diff_plus_hfa.toFixed(2)+'</td></tr>');
+
+           $results.append('<br/>');
+           $results.append('<tr><td>Rating + Predictor: </td><td>'+rating_plus_predictor.toFixed(2)+'</td></tr>');
+           $results.append('<tr><td>Divided by 2: </td><td>'+(calculated_line).toFixed(2)+'</td></tr>');
+           $results.append('<br/>');
+           $results.append('<tr><td><b>Calculated Line: </b></td><td><b>'+(calculated_line).toFixed(2)+'</b></td></tr>');
+           $results.append('</table>');
+           $results.append('<br/>');
+
+           // Clear the form inputs.
+           $('.form-input').val('');
+
+           return false;
+         });
+      });
+    </script>
+  </body>
+</html>

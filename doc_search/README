@@ -1,0 +1,15 @@
+File: doc_search.php
+
+Description: A program to search a text file for given key words
+
+To Run: php doc_search.php <file location> <word1> <word2> <word3> ....
+
+Running time: The program iterates through all the words in the file, assuming N words that would give us O(N). 
+At each word it checks if the word is one of the search words. If it is a search word, it is then added to an ordered "array" of search words. 
+The array of search words are then processed to check if all the search terms have been found and to ensure the first term in the array is not repeated in the array. 
+Processing here depends on the number of matching words in the array, say there are M matching words in the array, in the worst case then we have O(N*M). 
+In the worst case, M can approach N so that would give running time of O(N^2). 
+There is also processing required on recording the text snippet, over the course of the program this will be proportional to the number of words in the document, N. 
+So the worst case running time would be O(N^2 + N) the N term is inconsequential because of the N^2 so the running time is essentially O(N^2).
+
+Memory requirement: In the worst case, we end up storing the entire document in memory (to avoid doing two reads from disk - one for processing, the second to get the shortest snippet) so the memory required is O(N).
