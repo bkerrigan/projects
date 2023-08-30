@@ -1,0 +1,15 @@
+# Second Lowest Cost Silver Plan
+A description of the software and the requirements can be found here:
+https://homework.adhoc.team/slcsp/
+
+This application is a ruby program. To run the program, execute the find_slcsp ruby file, example:
+
+ruby find_slcsp.rb -p plans.csv -z zips.csv -s slcsp.csv
+
+The program requires three input CSV files: one for the list of zipe codes, one for the list of health plans, and one with the list of zip codes to look up the rates for the second lowest cost silver plans.
+
+Running the program with the -h option will print a help menu.
+
+To run the tests for this application, run the test file in the tests directory:
+
+ruby tests/slcsp_test.rb
